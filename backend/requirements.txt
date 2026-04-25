@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+Pillow
+pillow-heif
+python-multipart
+openai

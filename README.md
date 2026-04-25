@@ -7,7 +7,7 @@ A mobile-first web app that photographs a receipt, extracts data via OCR, lets u
 ```
 ┌──────────────────┐       ┌──────────────────────┐       ┌────────────┐
 │  React Frontend  │──────▶│  FastAPI Backend      │──────▶│  SQLite DB │
-│  (Vite + Tailwind)│ /api │  (Tesseract OCR)     │       │ receipts.db│
+│  (Vite + Tailwind)│ /api │  (GPT-4o Vision)     │       │ receipts.db│
 │  Port 5173       │◀──────│  Port 9999           │◀──────│            │
 └──────────────────┘       └──────────────────────┘       └────────────┘
 ```
@@ -16,7 +16,7 @@ The Vite dev server proxies `/api/*` → `localhost:9999`, so both services appe
 
 ## Features
 
-- **OCR scanning** — Upload or photograph a receipt; Tesseract extracts store name, date, line items, tax, tip, and total
+- **GPT-4o Vision OCR** — Upload or photograph a receipt; OpenAI's GPT-4o vision model extracts store name, date, line items, tax, tip, and total directly from the image
 - **Inline editing** — Every field is editable so users can fix OCR mistakes before saving
 - **Auto-categorization** — Items are automatically assigned a spending category (Groceries, Beverages, Electronics, etc.) via keyword matching; users can override with a dropdown
 - **Spending visualization** — Pie chart and bar chart views showing spending by category across all saved receipts (powered by Recharts)
@@ -30,17 +30,7 @@ The Vite dev server proxies `/api/*` → `localhost:9999`, so both services appe
 ## Prerequisites
 
 - **Python 3.10+**
-- **Tesseract OCR** — install the system package:
-  ```bash
-  # macOS
-  brew install tesseract
-
-  # Ubuntu/Debian
-  sudo apt install tesseract-ocr
-
-  # conda (no sudo needed)
-  conda install -c conda-forge tesseract
-  ```
+- **OpenAI API key** — get one at [platform.openai.com/api-keys](https://platform.openai.com/api-keys) (GPT-4o vision is used for receipt parsing)
 - **Node.js 18+** and npm
 
 ## Getting Started
@@ -52,6 +42,10 @@ cd backend
 python -m venv venv
 source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
+
+# Set your OpenAI API key
+export OPENAI_API_KEY="sk-..."
+
 uvicorn main:app --reload --port 9999
 ```
 
@@ -82,7 +76,7 @@ Open **http://localhost:5173** in your browser.
 
 ## How It Works
 
-1. **Scan** — User uploads/photographs a receipt. The backend preprocesses the image (grayscale → auto-contrast → binary threshold → median filter) and runs Tesseract OCR. Regex patterns extract the store name, date, line items, subtotal, tax, tip, and total. Each item is automatically categorized using keyword matching.
+1. **Scan** — User uploads/photographs a receipt. The backend sends the image to OpenAI's GPT-4o vision model, which returns structured JSON with store name, date, line items, subtotal, tax, tip, and total. Each item is then automatically categorized using keyword matching.
 
 2. **Edit** — The parsed data appears in an editable card. Users can fix item names/prices, change categories via dropdown, add or remove items, and adjust tax/tip. Subtotal and total are auto-calculated from the items.
 
@@ -94,7 +88,7 @@ Open **http://localhost:5173** in your browser.
 
 ## Database Schema
 
-**`receipts`** — store_name, date, subtotal/tax/tip/total (stored as integer cents), raw OCR text, scan timestamp.
+**`receipts`** — store_name, date, subtotal/tax/tip/total (stored as integer cents), raw GPT-4o response, scan timestamp.
 
 **`items`** — receipt_id (FK with cascade delete), name, price_cents, product_id, category.
 
@@ -138,6 +132,6 @@ pytest test_database.py -v
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React 19, Vite 8, Tailwind CSS 4, Recharts |
-| Backend | FastAPI, Tesseract OCR, Pillow |
+| Backend | FastAPI, OpenAI GPT-4o Vision, Pillow |
 | Database | SQLite (WAL mode) |
 | Formats | JPEG, PNG, HEIC (via pillow-heif) |

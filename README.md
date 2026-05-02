@@ -1,5 +1,7 @@
 # 🧾 Receipt Scanner
 
+📺 [Watch the demo video](https://youtu.be/8YKEF-zYSv4)
+
 A mobile-first web app that photographs a receipt, extracts data via OCR, lets users correct mistakes inline, and saves the structured result to a SQLite database. Includes automatic item categorization and a spending visualization dashboard.
 
 ## Architecture
@@ -127,6 +129,121 @@ source venv/bin/activate
 pytest test_database.py -v
 ```
 
+## OCR Evaluation Workflow
+
+The repo includes an OCR evaluation utility that supports:
+- interactive annotation from `document_scanner_photos`
+- OCR-seeded drafts you can keep/edit into ground truth
+- precision, recall, F1, accuracy, and exact-match reporting
+
+### 1. Annotate Ground Truth
+
+```bash
+cd /home/isadorawhite/cse291p/receipt-scanner-lecture
+export OPENAI_API_KEY="sk-..."
+backend/venv/bin/python backend/ocr_eval.py annotate
+```
+
+Annotation behavior:
+- Each image starts with an OCR draft.
+- Choose `k` (keep), `e` (edit), or `s` (skip).
+- Saved labels go to `backend/ocr_annotations.json`.
+
+### 2. Run Evaluation
+
+```bash
+cd /home/isadorawhite/cse291p/receipt-scanner-lecture
+export OPENAI_API_KEY="sk-..."
+backend/venv/bin/python backend/ocr_eval.py evaluate
+```
+
+Outputs:
+- per-example metrics in terminal
+- aggregate report in `backend/ocr_eval_report.json`
+- cached predictions in `backend/ocr_predictions.json`
+
+### Latest Evaluate Run Results
+
+Run date: **May 1, 2026**
+
+- Examples evaluated: `10`
+- Micro: `Precision=1.000`, `Recall=1.000`, `F1=1.000`, `Accuracy=1.000`
+- Macro: `Precision=1.000`, `Recall=1.000`, `F1=1.000`, `Accuracy=1.000`
+- Exact match rate: `1.000`
+
+Command used:
+
+```bash
+OPENAI_API_KEY=dummy backend/venv/bin/python backend/ocr_eval.py evaluate
+```
+
+Note: this run used cached OCR predictions in `backend/ocr_predictions.json`.
+
+## Category Evaluation Workflow
+
+The repo also includes category-label evaluation for the LLM categorizer.
+
+### 1. Annotate Category Ground Truth
+
+```bash
+cd /home/isadorawhite/cse291p/receipt-scanner-lecture
+export OPENAI_API_KEY="sk-..."
+backend/venv/bin/python backend/category_eval.py annotate
+```
+
+Annotation behavior:
+- Receipt items are extracted and category-predicted first.
+- For each image choose `a` (accept all), `e` (edit each item category), or `s` (skip).
+- Saved labels go to `backend/category_annotations.json`.
+
+### 2. Run Category Evaluation
+
+```bash
+cd /home/isadorawhite/cse291p/receipt-scanner-lecture
+export OPENAI_API_KEY="sk-..."
+backend/venv/bin/python backend/category_eval.py evaluate
+```
+
+Outputs:
+- per-image accuracy in terminal
+- aggregate category metrics in `backend/category_eval_report.json`
+- cached predictions in `backend/category_predictions.json`
+
+Useful options:
+
+```bash
+# Rebuild predictions from model before annotation
+backend/venv/bin/python backend/category_eval.py annotate --refresh-predictions
+
+# Re-run category predictions during evaluation
+backend/venv/bin/python backend/category_eval.py evaluate --refresh-predictions
+```
+
+### Latest Category Evaluate Run Results
+
+Run date: **May 1, 2026**
+
+- Items evaluated: `24`
+- Accuracy: `0.750`
+- Micro: `Precision=0.750`, `Recall=0.750`, `F1=0.750`
+- Macro: `Precision=0.485`, `Recall=0.500`, `F1=0.470`
+
+Per-image accuracy:
+- `document_scanner_photos/IMG_4805.HEIC`: `0.400` (`2/5`)
+- `document_scanner_photos/IMG_4806.HEIC`: `1.000` (`5/5`)
+- `document_scanner_photos/IMG_5598.HEIC`: `1.000` (`2/2`)
+- `document_scanner_photos/IMG_5600.HEIC`: `1.000` (`1/1`)
+- `document_scanner_photos/IMG_5779 2.HEIC`: `1.000` (`4/4`)
+- `document_scanner_photos/IMG_5780.HEIC`: `1.000` (`2/2`)
+- `document_scanner_photos/IMG_5783 2.HEIC`: `1.000` (`1/1`)
+- `document_scanner_photos/IMG_5784.HEIC`: `0.250` (`1/4`)
+
+Command used:
+
+```bash
+backend/venv/bin/python backend/category_eval.py evaluate
+```
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -135,3 +252,7 @@ pytest test_database.py -v
 | Backend | FastAPI, OpenAI GPT-4o Vision, Pillow |
 | Database | SQLite (WAL mode) |
 | Formats | JPEG, PNG, HEIC (via pillow-heif) |
+
+## Demo Video
+
+📺 [Watch the demo video](https://youtu.be/8YKEF-zYSv4)

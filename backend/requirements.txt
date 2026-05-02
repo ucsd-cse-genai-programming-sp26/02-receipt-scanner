@@ -4,3 +4,5 @@ Pillow
 pillow-heif
 python-multipart
 openai
+PyJWT
+passlib

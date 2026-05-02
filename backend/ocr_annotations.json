@@ -1,0 +1,34 @@
+{
+  "records": {
+    "document_scanner_photos/IMG_4805.HEIC": {
+      "ground_truth_text": "Meze\nMeze Greek Fusion\n345 6th Ave\nSan Diego, CA 92101\n\nerver: Josue                      12/02/2025\nable 83/1                       12:57 PM\nuests: 0                       40004\n\nummus                          10.00\nspanakopita                    14.00\nFalafel Meze                   11.00\nFalafel Plate                  24.00\nGyro Plate                    25.00\n\nSubtotal                      84.00\nTax                            6.51\n\nTotal                        90.51\n\nBalance Due                  $90.51\n\nEfkharisto!\nExcellent Service (22%)=18.48\n      Good Service (20%)=16.80\nStandard Service (18%)=15.12\n      In lieu of raising menu\nprices due to rising costs\n      a 3.99% fee is added\n      to any C.C. transaction\nCARD PAYMENT DUE=94.12"
+    },
+    "document_scanner_photos/IMG_4806.HEIC": {
+      "ground_truth_text": "345 6th Ave\nSan Diego, CA 92101\n\n12/02/2025\n12:57 PM\n40004\n\nerver: Josue\nable 83/1\nuests: 0\n\n10.00\n14.00\n11.00\n24.00\n25.00\n\n84.00\n6.51\n\nSubtotal\nTax\n\n90.51\n\nTotal\n$90.51\n\nBalance Due\n\nEfkharisto!\nExcellent Service (22%)=18.48\nGood Service (20%)=16.80\nStandard Service (18%)=15.12\nIn lieu of raising menu\nprices due to rising costs\na 3.99% fee is added\nto any C.C. transaction\nCARD PAYMENT DUE=94.12"
+    },
+    "document_scanner_photos/IMG_4816.HEIC": {
+      "ground_truth_text": "Regents Pizzeria\n100 - 4150 Regents Park Row\nLa Jolla, CA 92037\nPURCHASE\n\n12/03/2025 20:31:12\n\nVISA CREDIT\nA0000000031010 497\nTicket #:\nLane: AVENLEA\nClerk ID: 2140502949\nTransaction ID:\nCard: ************6471\nVISA\nPayment Type: ContactlessIcc\nEntry Mode:\nAPPROVED\n\nSubtotal: $34.48\nTip: $3.45\n============\n\nTotal Amount: $37.93\nTotal Authorized $37.93\nAuth #: 003240\nResponse Code: 00/APPROVAL\nARQC 932490C8A8334C8E\n\nCardholder Copy"
+    },
+    "document_scanner_photos/IMG_4817.HEIC": {
+      "ground_truth_text": "Regents Pizzeria  \n100 - 4150 Regents Park Row  \nLa Jolla, CA 92037  \nPURCHASE  \n\n12/03/2025 20:31:12  \n\nVISA CREDIT  \nA0000000031010  \nTicket #: 497  \nLane:  \nClerk ID: AVENLEA  \nTransaction ID: 2140502949  \nCard: ************6471  \nPayment Type: VISA  \nEntry Mode: ContactlessIcc  \nAPPROVED  \n\n$34.48  \n$3.45  \n==========  \n$37.93  \n$37.93  \nAuth #: 003240  \nResponse Code: 00/APPROVAL  \nARQC 932490C8A8334C8E  \n\nCardholder Copy"
+    },
+    "document_scanner_photos/IMG_5598.HEIC": {
+      "ground_truth_text": "Ramen Nagi UTC\n4301 La Jolla Village\nDr., Suite 2033\nSan Diego, CA\n92122\nramennagiusa.com\n\nMarch 19, 2026\n8:47 PM\nHyukjoo\n\nIN STORE\n\nTicket: E 17\nReceipt: Z63m\nAuthorization: 019550\n\nVISA CREDIT\nAID A0 00 00 00 03 10 10\n\nFOR HERE\n\nBlack King $17.95\nVeggie King $17.75\n\nSubtotal $35.70\n7.75% Sales Tax (SD, SCP) $2.77\n(7.75%)\n\nTotal $38.47\nVisa 6471 (Contactless) $38.47\n\nPlease pay at the cashier.\nThank you for dining with us!"
+    },
+    "document_scanner_photos/IMG_5600.HEIC": {
+      "ground_truth_text": "SALT & STRAW\n\nSalt & Straw\n4575 La Jolla Village Dr.\n(619)952-2008\n\nTake Out*\n\nServer: Karen M\nCheck #347 3/19/26 9:10 PM\nOrdered:\n\n2 Single Scoop $13.90\n\nSubtotal $13.90\nTotal $13.90\n\nInput Type C (EMV Chip Read)\nVISA CREDIT xxxxxxxx6471\nTransaction Type Sale\nAuthorization Approved 019776\nApproval Code cgnMjRHw9FyX\nPayment ID A0000000031010\nApplication ID VISA CREDIT\nApplication Label BBPOS\nDevice ID\nCard Reader"
+    },
+    "document_scanner_photos/IMG_5779 2.HEIC": {
+      "ground_truth_text": "CVS pharmacy\n1792 GARNET AVE\nSAN DIEGO, CA 92109\n858.483.1489\n\nREG#09 TRN#1559 CSHR#0000094 STR#9538\n\n1 CRV SA CLNSR 12OZ 12Z 17.79T\nF 1 CVS ANTBTIC HD FAB 60CT 8.29T\nF 1 CVS HYDROCORT 1% 1Z 6.29T\nF 1 RAEL INVIS SPT CVR 48CT 13.99T\n\n4 ITEMS\n\nSurvey ID #\n5430 6662 9047 004 67\n\nSUBTOTAL 46.36\nCA 7.75% TAX 3.59\nTOTAL 49.95\nCHARGE 49.95\n************6471 RF\n\nVISA CREDIT ************6471\nAPPROVED# 018799 REF# 095591\nTRAN TYPE: SALE AID: A0000000031010\nTC: E08D44911A62B70B TERMINAL#\nNO SIGNATURE REQUIRED\nTVR(95): 0000000000 CVM: 1E0000\nTSIC(9B): 0000\n\nCHANGE .00\n\n3509 5386 1081 5590 97\nReturns with receipt, subject to\nCVS Return Policy, thru 06/17/2026\nRefund amount is based on price\nafter all coupons and discounts.\n\nAPRIL 18, 2026 2:59 PM\n\n14 no-cost vaccines\navailable with most insurance"
+    },
+    "document_scanner_photos/IMG_5780.HEIC": {
+      "ground_truth_text": "Jamba  \n1774 Garnet Ave. #D  \nSan Diego, CA 92109  \n858-490-5177  \nhttp://www.jamba.com/  \n\nTo Go*  \n\nServer: Kyla M  \nCheck #90  \nOrdered: 4/18/26 3:04 PM  \n\nLarge Razzmatazz $9.99  \nBlue Jar  \n\nSubtotal $9.99  \n$1.00  \n$10.99  \n\nContactless  \nxxxxxxxx6471  \n3:04 PM  \nSale  \nApproved  \n018521  \nLgJFzwsMPqqn  \nA0000000031010  \nVISA CREDIT  \nBBPOS"
+    },
+    "document_scanner_photos/IMG_5783 2.HEIC": {
+      "ground_truth_text": "Elixir Espresso Bar  \n1753 Garnet Ave  \nSan Diego, CA  \n92109-3351  \n(858) 247-7112  \nelixirespressobar.com  \n\nApril 18, 2026  \n3:47 PM  \n\nTicket: 27  \nReceipt: Dx8g  \nAuthorization: 018632  \n\nVISA CREDIT  \nAID A0 00 00 00 03 10 10  \n\nTO GO  \n\nTea - Loose Leaf  $5.00  \nHot - 16 oz, Jasmine Green Tea  \n\nSubtotal  $5.00  \nTip  $1.00  \n\nTotal  $6.00  \nVisa 6471 (Contactless)  $6.00"
+    },
+    "document_scanner_photos/IMG_5784.HEIC": {
+      "ground_truth_text": "CITY TACOS\n\nCity Tacos- Pacific Beach\n4516 mission blvd Suite E\nSan Diego, CA 92109\n(858) 284-4239\n\nServer: Martin S\nCheck #242\nOrdered: 4/18/26 6:32 PM\n\n2 CITY ZUCCHINI $8.50\n2 PORTOBELLO $10.50\n1 CHILE RELLENO $4.25\n2 NON-ALCOHOLIC BREW $9.00\n\nSubtotal $32.25\nTax $2.47\nTip $6.45\nTotal $41.17\n\nCredit Card Contactless\nVisa xxxxxxxx6471\nTransaction Type Sale\nAuthorization Approved\nApproval Code 018590\nPayment ID PdfngctMbxry\nApplication ID A0000000031010\nApplication Label VISA CREDIT\nCard Reader BBPOS\n\nVISA CARDHOLDER"
+    }
+  }
+}

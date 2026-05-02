@@ -1,82 +1,76 @@
+"""LLM-based item categorizer."""
+
+import json
+import os
+
+from openai import OpenAI
+
+CATEGORY_OPTIONS = [
+    "Groceries",
+    "Beverages",
+    "Dairy",
+    "Snacks",
+    "Personal Care",
+    "Household",
+    "Electronics",
+    "Clothing",
+    "Dining",
+    "Entertainment",
+    "Other",
+]
+
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+CATEGORIZATION_PROMPT = """Classify receipt items into spending categories.
+
+Rules:
+- Return JSON only as: {"categories": ["Category", ...]}
+- Output one category per input item in the same order
+- Allowed categories only: Groceries, Beverages, Dairy, Snacks, Personal Care, Household, Electronics, Clothing, Dining, Entertainment, Other
+- If uncertain, choose Other
 """
-Keyword-based item categorizer.
-
-Maps item names to categories using keyword matching.
-Designed to be easily replaceable with an LLM-based categorizer later.
-"""
-
-CATEGORY_KEYWORDS = {
-    "Groceries": [
-        "apple", "banana", "orange", "grape", "berry", "lemon", "lime", "mango",
-        "peach", "pear", "melon", "avocado", "tomato", "potato", "onion", "garlic",
-        "carrot", "broccoli", "lettuce", "spinach", "celery", "pepper", "corn",
-        "cucumber", "mushroom", "fruit", "vegetable", "veggie", "produce", "organic",
-        "egg", "milk", "cheese", "yogurt", "butter", "cream", "bread", "flour",
-        "sugar", "rice", "pasta", "cereal", "oat", "granola", "meat", "chicken",
-        "beef", "pork", "fish", "salmon", "tuna", "shrimp", "turkey", "sausage",
-        "bacon", "ham", "steak", "ground", "deli",
-    ],
-    "Beverages": [
-        "water", "juice", "soda", "cola", "pepsi", "coke", "sprite", "tea",
-        "coffee", "latte", "espresso", "cappuccino", "beer", "wine", "liquor",
-        "vodka", "whiskey", "rum", "gin", "champagne", "drink", "smoothie",
-        "lemonade", "kombucha", "energy drink", "gatorade",
-    ],
-    "Snacks": [
-        "chip", "chips", "cracker", "cookie", "candy", "chocolate", "gum",
-        "popcorn", "pretzel", "nut", "trail mix", "granola bar", "snack",
-        "jerky", "brownie", "cake", "donut", "pastry", "muffin", "ice cream",
-    ],
-    "Household": [
-        "paper towel", "toilet paper", "tissue", "napkin", "trash bag", "garbage",
-        "detergent", "soap", "cleaner", "sponge", "bleach", "wipe", "foil",
-        "plastic wrap", "bag", "battery", "bulb", "candle", "air freshener",
-    ],
-    "Personal Care": [
-        "shampoo", "conditioner", "body wash", "lotion", "deodorant", "toothpaste",
-        "toothbrush", "floss", "razor", "shaving", "sunscreen", "lip balm",
-        "makeup", "cosmetic", "perfume", "cologne", "hand sanitizer",
-    ],
-    "Health": [
-        "vitamin", "supplement", "medicine", "tylenol", "advil", "ibuprofen",
-        "aspirin", "bandage", "first aid", "antacid", "allergy", "cold",
-        "cough", "prescription", "pharmacy",
-    ],
-    "Restaurant": [
-        "burger", "pizza", "sandwich", "wrap", "taco", "burrito", "fries",
-        "salad", "soup", "appetizer", "entree", "dessert", "combo", "meal",
-        "side", "dine", "takeout", "delivery",
-    ],
-    "Electronics": [
-        "charger", "cable", "adapter", "headphone", "earphone", "speaker",
-        "phone", "tablet", "laptop", "computer", "usb", "hdmi", "mouse",
-        "keyboard", "monitor", "printer",
-    ],
-    "Clothing": [
-        "shirt", "pants", "jeans", "jacket", "coat", "dress", "skirt",
-        "shoes", "boots", "socks", "underwear", "hat", "scarf", "gloves",
-        "belt", "tie", "blouse",
-    ],
-}
-
-DEFAULT_CATEGORY = "Other"
-
-
-def categorize_item(item_name: str) -> str:
-    """Categorize an item name using keyword matching."""
-    if not item_name:
-        return DEFAULT_CATEGORY
-    name_lower = item_name.lower()
-    for category, keywords in CATEGORY_KEYWORDS.items():
-        for keyword in keywords:
-            if keyword in name_lower:
-                return category
-    return DEFAULT_CATEGORY
 
 
 def categorize_items(items: list[dict]) -> list[dict]:
-    """Add a category to each item that doesn't already have one."""
-    for item in items:
-        if not item.get("category"):
-            item["category"] = categorize_item(item.get("name", ""))
+    """Assign categories to items with a single LLM call."""
+    if not items:
+        return items
+
+    uncategorized_indices = [
+        i for i, item in enumerate(items) if not item.get("category") or item.get("category") == "Other"
+    ]
+    if not uncategorized_indices:
+        return items
+
+    names = [items[i].get("name") or "" for i in uncategorized_indices]
+
+    # Keep app functional without an API key by falling back to "Other".
+    if not client.api_key:
+        for idx in uncategorized_indices:
+            items[idx]["category"] = items[idx].get("category") or "Other"
+        return items
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            temperature=0,
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": CATEGORIZATION_PROMPT},
+                {"role": "user", "content": json.dumps({"items": names})},
+            ],
+            max_tokens=300,
+        )
+        raw = response.choices[0].message.content.strip()
+        parsed = json.loads(raw)
+        predicted = parsed.get("categories", [])
+    except Exception:
+        predicted = []
+
+    for local_i, item_idx in enumerate(uncategorized_indices):
+        category = predicted[local_i] if local_i < len(predicted) else "Other"
+        if category not in CATEGORY_OPTIONS:
+            category = "Other"
+        items[item_idx]["category"] = category
+
     return items

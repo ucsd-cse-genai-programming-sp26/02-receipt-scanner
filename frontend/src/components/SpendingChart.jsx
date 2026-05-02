@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import {
-  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
+  PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from "recharts";
 
@@ -9,14 +9,14 @@ const COLORS = [
   "#ec4899", "#06b6d4", "#f97316", "#6366f1", "#14b8a6", "#94a3b8",
 ];
 
-export default function SpendingChart() {
+export default function SpendingChart({ apiFetch }) {
   const [data, setData] = useState([]);
   const [view, setView] = useState("pie");
   const [loading, setLoading] = useState(true);
 
   async function fetchStats() {
     try {
-      const res = await fetch("/api/stats/categories");
+      const res = await apiFetch("/api/stats/categories");
       if (res.ok) setData(await res.json());
     } catch (e) {
       console.error("Failed to load category stats", e);
@@ -27,7 +27,7 @@ export default function SpendingChart() {
 
   useEffect(() => { fetchStats(); }, []);
 
-  if (loading) return <p className="text-center text-gray-400 py-8">Loading spending data…</p>;
+  if (loading) return <p className="text-center text-gray-400 py-8">Loading spending data...</p>;
   if (data.length === 0) return null;
 
   const totalSpent = data.reduce((s, d) => s + d.totalSpent, 0);
@@ -91,7 +91,6 @@ export default function SpendingChart() {
         )}
       </ResponsiveContainer>
 
-      {/* Legend table */}
       <div className="mt-4 grid grid-cols-2 gap-2">
         {data.map((d, i) => (
           <div key={d.category} className="flex items-center gap-2 text-sm">

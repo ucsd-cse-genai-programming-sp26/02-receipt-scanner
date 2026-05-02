@@ -1,0 +1,156 @@
+{
+  "records": {
+    "document_scanner_photos/IMG_4805.HEIC": {
+      "items": [
+        {
+          "name": "Hummus",
+          "predicted_category": "Groceries",
+          "ground_truth_category": "Dining"
+        },
+        {
+          "name": "Spanakopita",
+          "predicted_category": "Groceries",
+          "ground_truth_category": "Dining"
+        },
+        {
+          "name": "Falafel Meze",
+          "predicted_category": "Groceries",
+          "ground_truth_category": "Dining"
+        },
+        {
+          "name": "Falafel Plate",
+          "predicted_category": "Dining",
+          "ground_truth_category": "Dining"
+        },
+        {
+          "name": "Gyro Plate",
+          "predicted_category": "Dining",
+          "ground_truth_category": "Dining"
+        }
+      ]
+    },
+    "document_scanner_photos/IMG_4806.HEIC": {
+      "items": [
+        {
+          "name": "Hummus",
+          "predicted_category": "Groceries",
+          "ground_truth_category": "Groceries"
+        },
+        {
+          "name": "Spanakopita",
+          "predicted_category": "Groceries",
+          "ground_truth_category": "Groceries"
+        },
+        {
+          "name": "Falafel Meze",
+          "predicted_category": "Groceries",
+          "ground_truth_category": "Groceries"
+        },
+        {
+          "name": "Falafel Plate",
+          "predicted_category": "Dining",
+          "ground_truth_category": "Dining"
+        },
+        {
+          "name": "Gyro Plate",
+          "predicted_category": "Dining",
+          "ground_truth_category": "Dining"
+        }
+      ]
+    },
+    "document_scanner_photos/IMG_5598.HEIC": {
+      "items": [
+        {
+          "name": "Black King",
+          "predicted_category": "Dining",
+          "ground_truth_category": "Dining"
+        },
+        {
+          "name": "Veggie King",
+          "predicted_category": "Dining",
+          "ground_truth_category": "Dining"
+        }
+      ]
+    },
+    "document_scanner_photos/IMG_5600.HEIC": {
+      "items": [
+        {
+          "name": "2 Single Scoop",
+          "predicted_category": "Snacks",
+          "ground_truth_category": "Snacks"
+        }
+      ]
+    },
+    "document_scanner_photos/IMG_5779 2.HEIC": {
+      "items": [
+        {
+          "name": "CVS SA CLNSR 12OZ",
+          "predicted_category": "Personal Care",
+          "ground_truth_category": "Personal Care"
+        },
+        {
+          "name": "CVS ANTBTC HD FAB 60CT",
+          "predicted_category": "Personal Care",
+          "ground_truth_category": "Personal Care"
+        },
+        {
+          "name": "CVS HYDROCORT 1% 1Z",
+          "predicted_category": "Personal Care",
+          "ground_truth_category": "Personal Care"
+        },
+        {
+          "name": "RAEL INVIS SPT CVR 48CT",
+          "predicted_category": "Personal Care",
+          "ground_truth_category": "Personal Care"
+        }
+      ]
+    },
+    "document_scanner_photos/IMG_5780.HEIC": {
+      "items": [
+        {
+          "name": "Large Razzmatazz",
+          "predicted_category": "Beverages",
+          "ground_truth_category": "Beverages"
+        },
+        {
+          "name": "Blue Jar",
+          "predicted_category": "Other",
+          "ground_truth_category": "Other"
+        }
+      ]
+    },
+    "document_scanner_photos/IMG_5783 2.HEIC": {
+      "items": [
+        {
+          "name": "Tea - Loose Leaf",
+          "predicted_category": "Beverages",
+          "ground_truth_category": "Beverages"
+        }
+      ]
+    },
+    "document_scanner_photos/IMG_5784.HEIC": {
+      "items": [
+        {
+          "name": "2 CITY ZUCCHINI",
+          "predicted_category": "Groceries",
+          "ground_truth_category": "Dining"
+        },
+        {
+          "name": "2 PORTOBELLO",
+          "predicted_category": "Groceries",
+          "ground_truth_category": "Dining"
+        },
+        {
+          "name": "1 CHILE RELLENO",
+          "predicted_category": "Groceries",
+          "ground_truth_category": "Dining"
+        },
+        {
+          "name": "2 NON-ALCOHOLIC BREW",
+          "predicted_category": "Beverages",
+          "ground_truth_category": "Beverages"
+        }
+      ]
+    }
+  }
+}

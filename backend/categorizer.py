@@ -31,7 +31,26 @@ Rules:
 """
 
 
-def categorize_items(items: list[dict]) -> list[dict]:
+def _build_categorization_prompt(feedback_examples: list[dict] | None = None) -> str:
+    prompt = CATEGORIZATION_PROMPT
+    if not feedback_examples:
+        return prompt
+
+    lines = []
+    for ex in feedback_examples:
+        lines.append(
+            f'- item "{ex.get("rawItemName", "")}" -> '
+            f'name "{ex.get("correctedItemName", "")}", '
+            f'category "{ex.get("correctedCategory", "Other")}" '
+            f'(seen {ex.get("timesSeen", 1)}x)'
+        )
+    if lines:
+        prompt += "\n\nUser-specific correction history (apply only when item text is clearly similar):\n"
+        prompt += "\n".join(lines[:12])
+    return prompt
+
+
+def categorize_items(items: list[dict], feedback_examples: list[dict] | None = None) -> list[dict]:
     """Assign categories to items with a single LLM call."""
     if not items:
         return items
@@ -56,7 +75,7 @@ def categorize_items(items: list[dict]) -> list[dict]:
             temperature=0,
             response_format={"type": "json_object"},
             messages=[
-                {"role": "system", "content": CATEGORIZATION_PROMPT},
+                {"role": "system", "content": _build_categorization_prompt(feedback_examples)},
                 {"role": "user", "content": json.dumps({"items": names})},
             ],
             max_tokens=300,

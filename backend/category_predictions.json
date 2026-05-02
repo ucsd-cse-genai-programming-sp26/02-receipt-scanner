@@ -70,7 +70,7 @@
       "items": [
         {
           "name": "2 Single Scoop",
-          "predicted_category": "Snacks"
+          "predicted_category": "Dining"
         }
       ]
     },
@@ -118,15 +118,15 @@
       "items": [
         {
           "name": "2 CITY ZUCCHINI",
-          "predicted_category": "Groceries"
+          "predicted_category": "Dining"
         },
         {
           "name": "2 PORTOBELLO",
-          "predicted_category": "Groceries"
+          "predicted_category": "Dining"
         },
         {
           "name": "1 CHILE RELLENO",
-          "predicted_category": "Groceries"
+          "predicted_category": "Dining"
         },
         {
           "name": "2 NON-ALCOHOLIC BREW",

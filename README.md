@@ -223,26 +223,17 @@ backend/venv/bin/python backend/category_eval.py evaluate --refresh-predictions
 
 Run date: **May 1, 2026**
 
+Baseline run:
 - Items evaluated: `24`
-- Accuracy: `0.750`
-- Micro: `Precision=0.750`, `Recall=0.750`, `F1=0.750`
-- Macro: `Precision=0.485`, `Recall=0.500`, `F1=0.470`
+- Accuracy: `0.708`
+- Micro: `Precision=0.708`, `Recall=0.708`, `F1=0.708`
+- Macro: `Precision=0.381`, `Recall=0.409`, `F1=0.376`
 
-Per-image accuracy:
-- `document_scanner_photos/IMG_4805.HEIC`: `0.400` (`2/5`)
-- `document_scanner_photos/IMG_4806.HEIC`: `1.000` (`5/5`)
-- `document_scanner_photos/IMG_5598.HEIC`: `1.000` (`2/2`)
-- `document_scanner_photos/IMG_5600.HEIC`: `1.000` (`1/1`)
-- `document_scanner_photos/IMG_5779 2.HEIC`: `1.000` (`4/4`)
-- `document_scanner_photos/IMG_5780.HEIC`: `1.000` (`2/2`)
-- `document_scanner_photos/IMG_5783 2.HEIC`: `1.000` (`1/1`)
-- `document_scanner_photos/IMG_5784.HEIC`: `0.250` (`1/4`)
-
-Command used:
-
-```bash
-backend/venv/bin/python backend/category_eval.py evaluate
-```
+Feedback-enabled run (`11:51 PM`):
+- Items evaluated: `24`
+- Accuracy: `0.833`
+- Micro: `Precision=0.833`, `Recall=0.833`, `F1=0.833`
+- Macro: `Precision=0.400`, `Recall=0.432`, `F1=0.408`
 
 ## Tech Stack
 

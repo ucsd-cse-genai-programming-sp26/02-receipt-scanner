@@ -1,0 +1,124 @@
+{
+  "items_evaluated": 24,
+  "accuracy": 0.7083333333333334,
+  "micro": {
+    "precision": 0.7083333333333334,
+    "recall": 0.7083333333333334,
+    "f1": 0.7083333333333334
+  },
+  "macro": {
+    "precision": 0.380952380952381,
+    "recall": 0.4090909090909091,
+    "f1": 0.37559808612440193
+  },
+  "per_class": {
+    "Groceries": {
+      "precision": 0.3333333333333333,
+      "recall": 1.0,
+      "f1": 0.5,
+      "support": 3
+    },
+    "Beverages": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 3
+    },
+    "Dairy": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "Snacks": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 1
+    },
+    "Personal Care": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 4
+    },
+    "Household": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "Electronics": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "Clothing": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "Dining": {
+      "precision": 0.8571428571428571,
+      "recall": 0.5,
+      "f1": 0.631578947368421,
+      "support": 12
+    },
+    "Entertainment": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "Other": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 1
+    }
+  },
+  "per_image": [
+    {
+      "image": "document_scanner_photos/IMG_4805.HEIC",
+      "count": 5,
+      "accuracy": 0.4
+    },
+    {
+      "image": "document_scanner_photos/IMG_4806.HEIC",
+      "count": 5,
+      "accuracy": 1.0
+    },
+    {
+      "image": "document_scanner_photos/IMG_5598.HEIC",
+      "count": 2,
+      "accuracy": 1.0
+    },
+    {
+      "image": "document_scanner_photos/IMG_5600.HEIC",
+      "count": 1,
+      "accuracy": 0.0
+    },
+    {
+      "image": "document_scanner_photos/IMG_5779 2.HEIC",
+      "count": 4,
+      "accuracy": 1.0
+    },
+    {
+      "image": "document_scanner_photos/IMG_5780.HEIC",
+      "count": 2,
+      "accuracy": 1.0
+    },
+    {
+      "image": "document_scanner_photos/IMG_5783 2.HEIC",
+      "count": 1,
+      "accuracy": 1.0
+    },
+    {
+      "image": "document_scanner_photos/IMG_5784.HEIC",
+      "count": 4,
+      "accuracy": 0.25
+    }
+  ]
+}

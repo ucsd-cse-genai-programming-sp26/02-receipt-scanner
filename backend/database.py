@@ -90,6 +90,38 @@ def init_db():
             """
         )
 
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS feedback_item_corrections (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                store_name TEXT NOT NULL DEFAULT '',
+                raw_item_name TEXT NOT NULL,
+                corrected_item_name TEXT NOT NULL,
+                corrected_category TEXT NOT NULL,
+                times_seen INTEGER NOT NULL DEFAULT 1,
+                last_seen TEXT NOT NULL,
+                UNIQUE (user_id, store_name, raw_item_name, corrected_item_name, corrected_category),
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS feedback_store_corrections (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                raw_store_name TEXT NOT NULL,
+                corrected_store_name TEXT NOT NULL,
+                times_seen INTEGER NOT NULL DEFAULT 1,
+                last_seen TEXT NOT NULL,
+                UNIQUE (user_id, raw_store_name, corrected_store_name),
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+            """
+        )
+
 
 def _dollars_to_cents(val):
     if val is None:
@@ -357,6 +389,198 @@ def upsert_budgets(user_id: int, month: str, budgets: dict[str, float]) -> dict[
                 (user_id, month, category, cents),
             )
     return get_budgets(user_id, month)
+
+
+def _normalize_text(value: str | None) -> str:
+    return (value or "").strip()
+
+
+def _normalize_store(value: str | None) -> str:
+    return _normalize_text(value).lower()
+
+
+def _upsert_item_feedback(
+    conn,
+    user_id: int,
+    store_name: str,
+    raw_item_name: str,
+    corrected_item_name: str,
+    corrected_category: str,
+) -> None:
+    now = datetime.utcnow().isoformat() + "Z"
+    conn.execute(
+        """
+        INSERT INTO feedback_item_corrections
+        (user_id, store_name, raw_item_name, corrected_item_name, corrected_category, times_seen, last_seen)
+        VALUES (?, ?, ?, ?, ?, 1, ?)
+        ON CONFLICT(user_id, store_name, raw_item_name, corrected_item_name, corrected_category)
+        DO UPDATE SET
+            times_seen = feedback_item_corrections.times_seen + 1,
+            last_seen = excluded.last_seen
+        """,
+        (user_id, store_name, raw_item_name, corrected_item_name, corrected_category, now),
+    )
+
+
+def _upsert_store_feedback(conn, user_id: int, raw_store_name: str, corrected_store_name: str) -> None:
+    now = datetime.utcnow().isoformat() + "Z"
+    conn.execute(
+        """
+        INSERT INTO feedback_store_corrections
+        (user_id, raw_store_name, corrected_store_name, times_seen, last_seen)
+        VALUES (?, ?, ?, 1, ?)
+        ON CONFLICT(user_id, raw_store_name, corrected_store_name)
+        DO UPDATE SET
+            times_seen = feedback_store_corrections.times_seen + 1,
+            last_seen = excluded.last_seen
+        """,
+        (user_id, raw_store_name, corrected_store_name, now),
+    )
+
+
+def record_feedback_from_receipt_edit(user_id: int, before: dict, after: dict) -> None:
+    """
+    Persist user-approved corrections so future OCR/categorization prompts can be personalized.
+    """
+    before_store = _normalize_store(before.get("storeName"))
+    after_store = _normalize_store(after.get("storeName"))
+    effective_store = after_store or before_store
+
+    with get_db() as conn:
+        if before_store and after_store and before_store != after_store:
+            _upsert_store_feedback(conn, user_id, before_store, after_store)
+
+        before_by_id = {}
+        for item in before.get("items", []):
+            item_id = item.get("id")
+            if item_id is not None:
+                before_by_id[item_id] = item
+
+        for item in after.get("items", []):
+            item_id = item.get("id")
+            if item_id is None or item_id not in before_by_id:
+                continue
+
+            old = before_by_id[item_id]
+            old_name = _normalize_text(old.get("name"))
+            new_name = _normalize_text(item.get("name"))
+            old_category = _normalize_text(old.get("category")) or "Other"
+            new_category = _normalize_text(item.get("category")) or "Other"
+
+            changed = (old_name != new_name) or (old_category != new_category)
+            if not changed or not old_name:
+                continue
+
+            _upsert_item_feedback(
+                conn=conn,
+                user_id=user_id,
+                store_name=effective_store,
+                raw_item_name=old_name.lower(),
+                corrected_item_name=(new_name or old_name).lower(),
+                corrected_category=new_category,
+            )
+
+
+def record_feedback_from_category_overrides(
+    user_id: int, store_name: str | None, overrides: list[dict]
+) -> None:
+    """
+    Persist category corrections inferred from a newly saved receipt.
+    Each override item should include:
+      - rawItemName
+      - correctedItemName
+      - correctedCategory
+    """
+    norm_store = _normalize_store(store_name)
+    with get_db() as conn:
+        for item in overrides:
+            raw_name = _normalize_text(item.get("rawItemName")).lower()
+            corrected_name = _normalize_text(item.get("correctedItemName")).lower() or raw_name
+            corrected_category = _normalize_text(item.get("correctedCategory")) or "Other"
+            if not raw_name:
+                continue
+            _upsert_item_feedback(
+                conn=conn,
+                user_id=user_id,
+                store_name=norm_store,
+                raw_item_name=raw_name,
+                corrected_item_name=corrected_name,
+                corrected_category=corrected_category,
+            )
+
+
+def get_feedback_examples(
+    user_id: int, store_name: str | None = None, item_names: list[str] | None = None, limit: int = 8
+) -> dict:
+    norm_store = _normalize_store(store_name)
+    norm_items = {_normalize_text(name).lower() for name in (item_names or []) if _normalize_text(name)}
+
+    with get_db() as conn:
+        if norm_store:
+            rows = conn.execute(
+                """
+                SELECT store_name, raw_item_name, corrected_item_name, corrected_category, times_seen, last_seen
+                FROM feedback_item_corrections
+                WHERE user_id = ? AND (store_name = ? OR store_name = '')
+                ORDER BY times_seen DESC, last_seen DESC
+                LIMIT 100
+                """,
+                (user_id, norm_store),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                """
+                SELECT store_name, raw_item_name, corrected_item_name, corrected_category, times_seen, last_seen
+                FROM feedback_item_corrections
+                WHERE user_id = ?
+                ORDER BY times_seen DESC, last_seen DESC
+                LIMIT 100
+                """,
+                (user_id,),
+            ).fetchall()
+
+        item_examples = []
+        for row in rows:
+            raw_name = row["raw_item_name"]
+            corrected_name = row["corrected_item_name"]
+            match_score = int(raw_name in norm_items or corrected_name in norm_items)
+            store_match = int(bool(norm_store) and row["store_name"] == norm_store)
+            if (norm_items or norm_store) and not (match_score or store_match):
+                continue
+            score = (match_score * 1000) + (store_match * 100) + row["times_seen"]
+            item_examples.append(
+                {
+                    "storeName": row["store_name"],
+                    "rawItemName": raw_name,
+                    "correctedItemName": corrected_name,
+                    "correctedCategory": row["corrected_category"],
+                    "timesSeen": row["times_seen"],
+                    "score": score,
+                }
+            )
+        item_examples.sort(key=lambda x: (x["score"], x["timesSeen"]), reverse=True)
+        item_examples = item_examples[:limit]
+
+        store_rows = conn.execute(
+            """
+            SELECT raw_store_name, corrected_store_name, times_seen
+            FROM feedback_store_corrections
+            WHERE user_id = ?
+            ORDER BY times_seen DESC, last_seen DESC
+            LIMIT ?
+            """,
+            (user_id, limit),
+        ).fetchall()
+        store_examples = [
+            {
+                "rawStoreName": row["raw_store_name"],
+                "correctedStoreName": row["corrected_store_name"],
+                "timesSeen": row["times_seen"],
+            }
+            for row in store_rows
+        ]
+
+    return {"itemExamples": item_examples, "storeExamples": store_examples}
 
 
 def _row_to_receipt(row, item_rows) -> dict:

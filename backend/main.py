@@ -22,12 +22,15 @@ from categorizer import categorize_items
 from database import (
     create_user,
     delete_receipt,
+    get_feedback_examples,
     get_budgets,
     get_monthly_spend_by_category,
     get_receipt,
     get_user_by_username,
     init_db,
     list_receipts,
+    record_feedback_from_category_overrides,
+    record_feedback_from_receipt_edit,
     save_receipt,
     update_receipt,
     upsert_budgets,
@@ -64,6 +67,33 @@ Rules:
 - Include every line item you can read
 - If a field is unreadable, use null
 - Do NOT include payment method lines, change due, or card numbers as items"""
+
+
+def _build_scan_prompt_with_feedback(base_prompt: str, feedback: dict) -> str:
+    lines = [base_prompt]
+    store_examples = feedback.get("storeExamples", [])
+    item_examples = feedback.get("itemExamples", [])
+    if not store_examples and not item_examples:
+        return base_prompt
+
+    lines.append("\nUser-specific correction history from prior accepted edits:")
+    if store_examples:
+        lines.append("Store name corrections:")
+        for ex in store_examples[:6]:
+            lines.append(
+                f'- "{ex.get("rawStoreName", "")}" -> "{ex.get("correctedStoreName", "")}" '
+                f'(seen {ex.get("timesSeen", 1)}x)'
+            )
+    if item_examples:
+        lines.append("Item-level corrections:")
+        for ex in item_examples[:8]:
+            lines.append(
+                f'- "{ex.get("rawItemName", "")}" -> "{ex.get("correctedItemName", "")}" '
+                f'category "{ex.get("correctedCategory", "Other")}" '
+                f'(seen {ex.get("timesSeen", 1)}x)'
+            )
+    lines.append("Use these as hints only when image evidence supports it.")
+    return "\n".join(lines)
 
 
 class AuthPayload(BaseModel):
@@ -150,6 +180,8 @@ async def scan_receipt(
         image = image.convert("RGB")
 
     data_url = image_to_base64_data_url(image)
+    global_feedback = get_feedback_examples(user_id=current_user["id"], limit=8)
+    scan_prompt = _build_scan_prompt_with_feedback(SCAN_PROMPT, global_feedback)
 
     try:
         response = client.chat.completions.create(
@@ -158,7 +190,7 @@ async def scan_receipt(
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": SCAN_PROMPT},
+                        {"type": "text", "text": scan_prompt},
                         {
                             "type": "image_url",
                             "image_url": {"url": data_url, "detail": "high"},
@@ -196,7 +228,15 @@ async def scan_receipt(
     result = {
         "storeName": parsed.get("storeName"),
         "date": parsed.get("date"),
-        "items": categorize_items(items),
+        "items": categorize_items(
+            items,
+            feedback_examples=get_feedback_examples(
+                user_id=current_user["id"],
+                store_name=parsed.get("storeName"),
+                item_names=[item.get("name", "") for item in items],
+                limit=12,
+            ).get("itemExamples", []),
+        ),
         "subtotal": parsed.get("subtotal"),
         "tax": parsed.get("tax"),
         "tip": parsed.get("tip"),
@@ -218,7 +258,47 @@ async def api_list_receipts(current_user: dict = Depends(get_current_user)):
 
 @app.post("/api/receipts")
 async def api_save_receipt(receipt: dict, current_user: dict = Depends(get_current_user)):
+    incoming_items = receipt.get("items", []) or []
+    category_seed_input = []
+    for item in incoming_items:
+        name = item.get("name")
+        if not name:
+            continue
+        category_seed_input.append({"name": name, "category": None})
+
+    baseline_items = categorize_items(
+        category_seed_input,
+        feedback_examples=[],
+    )
+    baseline_map = {}
+    for item in baseline_items:
+        key = (item.get("name") or "").strip().lower()
+        baseline_map[key] = item.get("category") or "Other"
+
+    overrides = []
+    for item in incoming_items:
+        name = (item.get("name") or "").strip()
+        if not name:
+            continue
+        key = name.lower()
+        user_category = (item.get("category") or "Other").strip() or "Other"
+        baseline_category = baseline_map.get(key, "Other")
+        if user_category != baseline_category:
+            overrides.append(
+                {
+                    "rawItemName": name,
+                    "correctedItemName": name,
+                    "correctedCategory": user_category,
+                }
+            )
+
     saved = save_receipt(receipt, user_id=current_user["id"])
+    if overrides:
+        record_feedback_from_category_overrides(
+            user_id=current_user["id"],
+            store_name=saved.get("storeName"),
+            overrides=overrides,
+        )
     return saved
 
 
@@ -234,9 +314,14 @@ async def api_get_receipt(receipt_id: int, current_user: dict = Depends(get_curr
 async def api_update_receipt(
     receipt_id: int, receipt: dict, current_user: dict = Depends(get_current_user)
 ):
+    before = get_receipt(receipt_id, user_id=current_user["id"])
+    if not before:
+        raise HTTPException(status_code=404, detail="Receipt not found")
+
     result = update_receipt(receipt_id, receipt, user_id=current_user["id"])
     if not result:
         raise HTTPException(status_code=404, detail="Receipt not found")
+    record_feedback_from_receipt_edit(current_user["id"], before, result)
     return result
 
 

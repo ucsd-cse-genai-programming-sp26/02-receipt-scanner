@@ -10,6 +10,7 @@ from PIL import Image
 from pillow_heif import register_heif_opener
 
 from categorizer import CATEGORY_OPTIONS, categorize_items
+from database import get_feedback_examples, init_db
 
 register_heif_opener()
 
@@ -127,9 +128,22 @@ def extract_receipt_items(client: OpenAI, image_path: Path, model: str) -> list[
     return items
 
 
-def predict_categories(item_names: list[str]) -> list[str]:
+def predict_categories(
+    item_names: list[str],
+    user_id: int | None = None,
+    store_name: str | None = None,
+    use_feedback: bool = False,
+) -> list[str]:
     items = [{"name": n, "category": None} for n in item_names]
-    categorized = categorize_items(items)
+    feedback_examples = None
+    if use_feedback and user_id is not None:
+        feedback_examples = get_feedback_examples(
+            user_id=user_id,
+            store_name=store_name,
+            item_names=item_names,
+            limit=12,
+        ).get("itemExamples", [])
+    categorized = categorize_items(items, feedback_examples=feedback_examples)
     out = []
     for item in categorized:
         cat = item.get("category") or "Other"
@@ -207,6 +221,7 @@ def compute_metrics(y_true: list[str], y_pred: list[str], labels: list[str]) -> 
 
 
 def annotate(args: argparse.Namespace) -> None:
+    init_db()
     images = list_images(args.images_dir)
     annotations = load_json(args.annotations_file)
     records = annotations.get("records", {})
@@ -234,7 +249,11 @@ def annotate(args: argparse.Namespace) -> None:
         elif client is not None:
             extracted_items = extract_receipt_items(client, image_path, args.extract_model)
             names = [x["name"] for x in extracted_items]
-            cats = predict_categories(names)
+            cats = predict_categories(
+                names,
+                user_id=args.user_id,
+                use_feedback=args.use_feedback,
+            )
             predicted_items = [
                 {
                     "name": n,
@@ -301,6 +320,7 @@ def annotate(args: argparse.Namespace) -> None:
 
 
 def evaluate(args: argparse.Namespace) -> None:
+    init_db()
     annotations = load_json(args.annotations_file)
     records = annotations.get("records", {})
     if not records:
@@ -325,7 +345,11 @@ def evaluate(args: argparse.Namespace) -> None:
             pred_map = {x.get("name"): normalize_category(x.get("predicted_category", "Other")) for x in pred_items}
             preds = [pred_map.get(name, "Other") for name in names]
         else:
-            preds = predict_categories(names)
+            preds = predict_categories(
+                names,
+                user_id=args.user_id,
+                use_feedback=args.use_feedback,
+            )
             predictions[rel] = {
                 "items": [
                     {"name": n, "predicted_category": normalize_category(p)} for n, p in zip(names, preds)
@@ -416,6 +440,17 @@ def build_parser() -> argparse.ArgumentParser:
         default="gpt-4o",
         help="Vision model for extracting receipt items",
     )
+    p_annotate.add_argument(
+        "--user-id",
+        type=int,
+        default=None,
+        help="User ID for per-user feedback context in category prediction",
+    )
+    p_annotate.add_argument(
+        "--use-feedback",
+        action="store_true",
+        help="Use per-user feedback memory to generate seeded category predictions",
+    )
 
     p_eval = sub.add_parser("evaluate", help="Evaluate category predictions against annotations")
     p_eval.add_argument(
@@ -440,6 +475,17 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=default_report_path(),
         help="Path to save category evaluation report JSON",
+    )
+    p_eval.add_argument(
+        "--user-id",
+        type=int,
+        default=None,
+        help="User ID for per-user feedback context during evaluation",
+    )
+    p_eval.add_argument(
+        "--use-feedback",
+        action="store_true",
+        help="Use per-user feedback memory during evaluation",
     )
 
     return parser
